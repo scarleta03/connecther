@@ -69,29 +69,17 @@ button:focus-visible {
 }
 */
 
-@import url("https://fonts.googleapis.com/css2? family-Poppins:wght@400;600;700&display-swap");
-
-* {
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
-body {
-  font-family: "Poppins", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  background: url(./Components/Assets/background-login-register-forms.png)
-    no-repeat center center fixed;
-  background-size: cover;
-  min-height: 100vh;
-}
-
-code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+#root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
