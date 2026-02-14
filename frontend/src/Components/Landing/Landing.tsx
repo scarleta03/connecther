@@ -7,7 +7,10 @@ function Landing() {
 
     const onScroll = () => {
       const y = window.scrollY;
-      document.documentElement.style.setProperty("--parallax-y", `${y * 0.35}px`);
+      document.documentElement.style.setProperty(
+        "--parallax-y",
+        `${y * 0.35}px`,
+      );
     };
 
     onScroll();
@@ -48,6 +51,34 @@ function Landing() {
       </section>
 
       <section className="spacer" aria-hidden="true" />
+
+<<<<<<< HEAD
+      <div className="footer-container">
+        <ul className="important-info">
+          <li>
+            <strong>Disclaimer:</strong> ConnectHER is an informational tool and
+            not a substitute for professional medical advice. Always consult a
+            healthcare provider for medical concerns.
+          </li>
+          <li>
+            <strong>Privacy:</strong> We prioritize your privacy. Your data is
+            securely stored and never shared without your consent.
+          </li>
+          <li>
+            <strong>Inclusive:</strong> We are committed to providing accessible
+            and inclusive healthcare information for all women.
+          </li>
+        </ul>
+      </div>
+=======
+      <footer className="footer-container">
+        <ul className="footer-links">
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+        </ul>
+      </footer>
+>>>>>>> d5ea3b449e9b916f2de0c24ae601dbb9da18572d
     </div>
   );
 }

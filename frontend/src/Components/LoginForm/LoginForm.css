@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
 
-.register-page {
+.login-page {
   min-height: 100vh;
   width: 100%;
   display: flex;
@@ -11,8 +11,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  background: url("/src/Components/Assets/background-login-register-forms.png")
-    no-repeat center center fixed;
+  background: url("/src/Components/Assets/background-login-form.png") no-repeat
+    center center fixed;
   background-size: cover;
 }
 
@@ -45,8 +45,7 @@
   background: transparent;
   border: none;
   outline: none;
-  border: 2px solid rgba(92, 74, 114, 0.05);
-
+  border: 8px solid rgba(8, 8, 8, 0.8);
   border-radius: 40px;
   font-size: 16px;
   color: #5c4a72;
@@ -54,7 +53,7 @@
 }
 
 .input-box ::placeholder {
-  color: rgba(11, 10, 10, 0.5);
+  color: rgba(54, 53, 53, 0.5);
 }
 
 .input-box .icon {
@@ -63,6 +62,30 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: 16px;
+}
+
+.wrapper .remember-forgot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14.5px;
+  margin: 10px 0 15px;
+  gap: 10px;
+}
+
+.remember-forgot label input {
+  accent-color: rgb(255, 255, 255);
+  margin-right: 4px;
+  margin-bottom: 10px;
+}
+
+.remember-forgot a {
+  color: slateblue;
+  text-decoration: none;
+}
+
+.remember-forgot a:hover {
+  text-decoration: underline;
 }
 
 .wrapper button {
@@ -80,18 +103,18 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.wrapper .login-link {
+.wrapper .register-link {
   font-size: 14.5px;
   text-align: center;
   margin: 20px 0 15px;
 }
 
-.login-link p a {
+.register-link p a {
   color: slateblue;
   text-decoration: none;
   font-weight: 600;
 }
 
-.login-link p a:hover {
+.register-link p a:hover {
   text-decoration: underline;
 }
