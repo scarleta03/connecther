@@ -52,6 +52,7 @@ function Landing() {
 
       <section className="spacer" aria-hidden="true" />
 
+<<<<<<< HEAD
       <div className="footer-container">
         <ul className="important-info">
           <li>
@@ -69,6 +70,15 @@ function Landing() {
           </li>
         </ul>
       </div>
+=======
+      <footer className="footer-container">
+        <ul className="footer-links">
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+        </ul>
+      </footer>
+>>>>>>> d5ea3b449e9b916f2de0c24ae601dbb9da18572d
     </div>
   );
 }
