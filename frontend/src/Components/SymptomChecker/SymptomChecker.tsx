@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { goToLoadingPage } from "../Loading/Loading";
 
 interface SymptomMoodItem {
   label: string;
@@ -106,9 +108,9 @@ function ChipButton({ item, selected, onClick, disabled }: ChipButtonProps) {
 }
 
 export default function SymptomTracker() {
+  const navigate = useNavigate();
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
-  const [submitted, setSubmitted] = useState<boolean>(false);
 
   const toggleSymptom = (label: string) => {
     setSelectedSymptoms((prev) =>
@@ -132,85 +134,8 @@ export default function SymptomTracker() {
 
   const handleSubmit = () => {
     if (selectedSymptoms.length === 0 && selectedMoods.length === 0) return;
-    setSubmitted(true);
+    goToLoadingPage(navigate);
   };
-
-  const handleReset = () => {
-    setSubmitted(false);
-    setSelectedSymptoms([]);
-    setSelectedMoods([]);
-  };
-
-  if (submitted) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "linear-gradient(160deg, #FFF5F7 0%, #F5EBF8 40%, #EBF0FA 100%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "'Poppins', sans-serif",
-          padding: "20px",
-        }}
-      >
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        <div
-          style={{
-            textAlign: "center",
-            animation: "fadeUp 0.6s ease-out",
-            maxWidth: "500px",
-          }}
-        >
-          <div style={{ fontSize: "64px", marginBottom: "20px" }}>🌸</div>
-          <h2
-            style={{
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: "32px",
-              color: "#5C3A5C",
-              marginBottom: "12px",
-            }}
-          >
-            Logged!
-          </h2>
-          <p style={{ color: "#8B7B8B", fontSize: "16px", lineHeight: 1.6, marginBottom: "8px" }}>
-            <strong style={{ color: "#6B3A6B" }}>Symptoms:</strong>{" "}
-            {selectedSymptoms.join(", ") || "None selected"}
-          </p>
-          <p style={{ color: "#8B7B8B", fontSize: "16px", lineHeight: 1.6, marginBottom: "32px" }}>
-            <strong style={{ color: "#6B3A6B" }}>Mood:</strong>{" "}
-            {selectedMoods.join(", ") || "None selected"}
-          </p>
-          <button
-            onClick={handleReset}
-            style={{
-              padding: "14px 40px",
-              borderRadius: "50px",
-              border: "none",
-              background: "linear-gradient(135deg, #C8A2C8 0%, #D4A5C8 50%, #E8A5B8 100%)",
-              color: "white",
-              fontSize: "16px",
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 600,
-              cursor: "pointer",
-              boxShadow: "0 6px 24px rgba(200,162,200,0.4)",
-            }}
-          >
-            Log Again
-          </button>
-        </div>
-        <style>{`
-          @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}</style>
-      </div>
-    );
-  }
 
   return (
     <div
