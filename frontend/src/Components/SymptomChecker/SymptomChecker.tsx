@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { goToLoadingPage } from "../Loading/Loading";
 
 interface SymptomMoodItem {
@@ -186,6 +186,22 @@ export default function SymptomTracker() {
           animation: "fadeIn 0.5s ease-out",
         }}
       >
+        {/* Back to home link */}
+        <div style={{ marginBottom: "24px" }}>
+          <Link
+            to="/landing"
+            style={{
+              color: "#8B7B8B",
+              fontSize: "14px",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            ← Back to home
+          </Link>
+        </div>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <div
