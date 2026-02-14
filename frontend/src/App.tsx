@@ -15,14 +15,13 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* LANDING */}
           <Route path="/" element={<Landing />} />
-
-          {/* AUTH FLOW */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
 
-          {/* ONBOARDING - requires auth but not onboarding completion */}
+          <Route path="/symptom-checker" element={<Landing />} />
+          <Route path="/find-a-provider" element={<FindDoctorPage />} />
+
           <Route
             path="/onboarding"
             element={
@@ -32,11 +31,14 @@ function App() {
             }
           />
 
+<<<<<<< HEAD
           {/* PUBLIC PAGES */}
           <Route path="/symptom-checker" element={<Landing />} />
           <Route path="/find-a-provider" element={<FindDoctorPage />} />
 
           {/* PROTECTED ROUTES - require both auth and onboarding */}
+=======
+>>>>>>> dccea0bb38f97710a512e7cc806187b7501d7130
           <Route
             path="/your-profile"
             element={
