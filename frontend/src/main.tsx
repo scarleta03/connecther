@@ -5,8 +5,10 @@ import "./index.css";
 import App from "./App.tsx";
 import "leaflet/dist/leaflet.css";
 
-const auth0Domain = "dev-3e3n4mi7tokt4bpi.us.auth0.com";
-const auth0ClientId = "AFWuJwwc7ORHRQB1rSY041R0teostGA1";
+const auth0Domain = import.meta.env.VITE_AUTH0_DOMAIN || "";
+const auth0ClientId = import.meta.env.VITE_AUTH0_CLIENT_ID || "";
+const auth0Enabled =
+  import.meta.env.VITE_ENABLE_AUTH0 === "true" && Boolean(auth0Domain && auth0ClientId);
 
 const app = (
   <StrictMode>
@@ -15,15 +17,19 @@ const app = (
 );
 
 createRoot(document.getElementById("root")!).render(
-  <Auth0Provider
-    domain={auth0Domain!}
-    clientId={auth0ClientId!}
-    authorizationParams={{
-      redirect_uri: window.location.origin,
-    }}
-    cacheLocation="localstorage"
-    useRefreshTokens
-  >
-    {app}
-  </Auth0Provider>,
+  auth0Enabled ? (
+    <Auth0Provider
+      domain={auth0Domain}
+      clientId={auth0ClientId}
+      authorizationParams={{
+        redirect_uri: window.location.origin,
+      }}
+      cacheLocation="localstorage"
+      useRefreshTokens
+    >
+      {app}
+    </Auth0Provider>
+  ) : (
+    app
+  ),
 );

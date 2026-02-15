@@ -48,53 +48,110 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH0_ENABLED = Boolean(
-  import.meta.env.VITE_AUTH0_DOMAIN && import.meta.env.VITE_AUTH0_CLIENT_ID,
-);
+const AUTH0_ENABLED =
+  import.meta.env.VITE_ENABLE_AUTH0 === "true" &&
+  Boolean(import.meta.env.VITE_AUTH0_DOMAIN && import.meta.env.VITE_AUTH0_CLIENT_ID);
+
+const LOCAL_USER_STORAGE_KEY = "user";
+const LOCAL_ACCOUNTS_STORAGE_KEY = "connecther:accounts";
+
+interface LocalAccount {
+  email: string;
+  password: string;
+  name: string;
+}
 
 function getProfileStorageKey(id: string) {
   return `connecther:user:${id}`;
 }
 
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+function readLocalAccounts(): LocalAccount[] {
+  const raw = localStorage.getItem(LOCAL_ACCOUNTS_STORAGE_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (account): account is LocalAccount =>
+        !!account &&
+        typeof account.email === "string" &&
+        typeof account.password === "string" &&
+        typeof account.name === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalAccounts(accounts: LocalAccount[]) {
+  localStorage.setItem(LOCAL_ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
+}
+
 function LocalAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+    const savedUser = localStorage.getItem(LOCAL_USER_STORAGE_KEY);
+    if (!savedUser) return null;
+    try {
+      const parsedUser = JSON.parse(savedUser) as User;
+      const savedEmail = normalizeEmail(parsedUser?.email || "");
+      const accountExists = readLocalAccounts().some(
+        (account) => normalizeEmail(account.email) === savedEmail,
+      );
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    if (email && password) {
-      // Try to retrieve existing user data from localStorage
-      const savedUser = localStorage.getItem("user");
-      let userData: User;
-
-      if (savedUser) {
-        // If user data exists, use it to preserve name and other info
-        const parsedUser = JSON.parse(savedUser);
-        // Case-insensitive email comparison
-        if (parsedUser.email.toLowerCase().trim() === email.toLowerCase().trim()) {
-          // Same user logging back in - use their saved data
-          userData = parsedUser;
-        } else {
-          // Different user - create new user data
-          userData = {
-            email,
-            name: email.split("@")[0],
-          };
-        }
-      } else {
-        // No saved user - create new user data
-        userData = {
-          email,
-          name: email.split("@")[0],
-        };
+      if (!savedEmail || !accountExists) {
+        localStorage.removeItem(LOCAL_USER_STORAGE_KEY);
+        return null;
       }
 
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      return true;
+      return parsedUser;
+    } catch {
+      return null;
     }
-    return false;
+  });
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setAuthError(null);
+    const normalizedEmail = normalizeEmail(email);
+    const trimmedPassword = password.trim();
+    if (!normalizedEmail || !trimmedPassword) return false;
+
+    const account = readLocalAccounts().find(
+      (candidate) => normalizeEmail(candidate.email) === normalizedEmail,
+    );
+
+    if (!account || account.password !== trimmedPassword) {
+      setAuthError("Invalid email or password.");
+      return false;
+    }
+
+    const savedUser = localStorage.getItem(LOCAL_USER_STORAGE_KEY);
+    let existingUserForAccount: User | null = null;
+
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser) as User;
+        if (normalizeEmail(parsedUser.email || "") === normalizedEmail) {
+          existingUserForAccount = parsedUser;
+        }
+      } catch {
+        existingUserForAccount = null;
+      }
+    }
+
+    const userData: User =
+      existingUserForAccount ?? {
+        email: account.email,
+        name: account.name || account.email.split("@")[0],
+      };
+
+    setUser(userData);
+    localStorage.setItem(LOCAL_USER_STORAGE_KEY, JSON.stringify(userData));
+    return true;
   };
 
   const register = async (
@@ -102,21 +159,42 @@ function LocalAuthProvider({ children }: { children: ReactNode }) {
     password: string,
     name: string,
   ): Promise<boolean> => {
-    if (email && password && name) {
-      const userData: User = {
-        email,
-        name,
-      };
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      return true;
+    setAuthError(null);
+    const normalizedEmail = normalizeEmail(email);
+    const trimmedPassword = password.trim();
+    const trimmedName = name.trim();
+    if (!normalizedEmail || !trimmedPassword || !trimmedName) return false;
+
+    const existingAccounts = readLocalAccounts();
+    const alreadyExists = existingAccounts.some(
+      (account) => normalizeEmail(account.email) === normalizedEmail,
+    );
+
+    if (alreadyExists) {
+      setAuthError("An account with this email already exists.");
+      return false;
     }
-    return false;
+
+    const nextAccount: LocalAccount = {
+      email: normalizedEmail,
+      password: trimmedPassword,
+      name: trimmedName,
+    };
+
+    writeLocalAccounts([...existingAccounts, nextAccount]);
+
+    const userData: User = {
+      email: normalizedEmail,
+      name: trimmedName,
+    };
+    setUser(userData);
+    localStorage.setItem(LOCAL_USER_STORAGE_KEY, JSON.stringify(userData));
+    return true;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem(LOCAL_USER_STORAGE_KEY);
   };
 
   const updateUserProfile = async (profileData: UserProfileData): Promise<void> => {
@@ -127,7 +205,7 @@ function LocalAuthProvider({ children }: { children: ReactNode }) {
       hasCompletedOnboarding: true,
     };
     setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
+    localStorage.setItem(LOCAL_USER_STORAGE_KEY, JSON.stringify(updatedUser));
   };
 
   const value: AuthContextType = {
@@ -139,8 +217,8 @@ function LocalAuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user,
     hasCompletedOnboarding: !!user?.hasCompletedOnboarding,
     isAuthLoading: false,
-    authError: null,
-    clearAuthError: () => {},
+    authError,
+    clearAuthError: () => setAuthError(null),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -205,19 +283,18 @@ function Auth0BackedAuthProvider({ children }: { children: ReactNode }) {
     await loginWithRedirect({
       authorizationParams: {
         login_hint: email || undefined,
-        redirect_uri: `${window.location.origin}/login`,
       },
       appState: {
-        returnTo: "/",
+        returnTo: "/your-profile",
       },
     });
     return true;
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (email: string, _password: string, name: string): Promise<boolean> => {
     setAuthError(null);
 
-    // Store the name in localStorage temporarily so we can use it after Auth0 redirect
+    // Store the name in sessionStorage temporarily so we can use it after Auth0 redirect
     if (name) {
       sessionStorage.setItem('pending-user-name', name);
     }
@@ -226,10 +303,9 @@ function Auth0BackedAuthProvider({ children }: { children: ReactNode }) {
       authorizationParams: {
         screen_hint: "signup",
         login_hint: email || undefined,
-        redirect_uri: `${window.location.origin}/register`,
       },
       appState: {
-        returnTo: "/",
+        returnTo: "/your-profile",
       },
     });
     return true;
