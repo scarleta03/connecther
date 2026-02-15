@@ -48,9 +48,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH0_ENABLED = Boolean(
-  import.meta.env.VITE_AUTH0_DOMAIN && import.meta.env.VITE_AUTH0_CLIENT_ID,
-);
+const AUTH0_ENABLED =
+  import.meta.env.VITE_ENABLE_AUTH0 === "true" &&
+  Boolean(import.meta.env.VITE_AUTH0_DOMAIN && import.meta.env.VITE_AUTH0_CLIENT_ID);
 
 const LOCAL_USER_STORAGE_KEY = "user";
 const LOCAL_ACCOUNTS_STORAGE_KEY = "connecther:accounts";
@@ -96,7 +96,18 @@ function LocalAuthProvider({ children }: { children: ReactNode }) {
     const savedUser = localStorage.getItem(LOCAL_USER_STORAGE_KEY);
     if (!savedUser) return null;
     try {
-      return JSON.parse(savedUser);
+      const parsedUser = JSON.parse(savedUser) as User;
+      const savedEmail = normalizeEmail(parsedUser?.email || "");
+      const accountExists = readLocalAccounts().some(
+        (account) => normalizeEmail(account.email) === savedEmail,
+      );
+
+      if (!savedEmail || !accountExists) {
+        localStorage.removeItem(LOCAL_USER_STORAGE_KEY);
+        return null;
+      }
+
+      return parsedUser;
     } catch {
       return null;
     }
