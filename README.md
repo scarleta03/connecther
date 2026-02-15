@@ -25,7 +25,8 @@ By meeting women where they are physically and mentally, we empower them to stay
 **Database:** PostgreSQL (via Supabase)  
 **Auth:** Supabase Authentication  
 **Auth0:** User Authentication for User Login/Account Creation   
-**AI:** Gemini API for intelligent recommendations and chatbot
+**AI:** Gemini API for intelligent recommendations and chatbot   
+**ElevenLabs + OpenAI:** API Keys used for Accessibility, enabling people fluent/native/proficient in languages other than English to navigate the website
 
 ## Get Started
 
