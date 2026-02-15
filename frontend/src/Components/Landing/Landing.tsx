@@ -8,6 +8,7 @@ import heroImage from "../Assets/doctor-consultation.png";
 import womanYoga from "../Assets/woman-yoga.png";
 import { FiVolume2 } from "react-icons/fi";
 import { apiService } from "../../services/api.service";
+import { isServerTtsNotConfigured, speakWithBrowserTts } from "../../utils/ttsFallback";
 
 const languageOptions = [
   { code: "en", label: "English" },
@@ -110,8 +111,26 @@ function Landing() {
       };
       await audio.play();
     } catch (err) {
-      setIsSpeaking(false);
       const message = err instanceof Error && err.message ? err.message : "Audio unavailable right now.";
+
+      if (isServerTtsNotConfigured(message)) {
+        try {
+          await speakWithBrowserTts(landingAudioText, audioLanguage);
+          setAudioError("Using browser voice because server text-to-speech is not configured.");
+          setIsSpeaking(false);
+          return;
+        } catch (fallbackError) {
+          const fallbackMessage =
+            fallbackError instanceof Error && fallbackError.message
+              ? fallbackError.message
+              : "Audio unavailable right now.";
+          setAudioError(fallbackMessage);
+          setIsSpeaking(false);
+          return;
+        }
+      }
+
+      setIsSpeaking(false);
       setAudioError(message);
     }
   };
@@ -264,6 +283,141 @@ function Landing() {
                 care decisions with confidence.
               </p>
             </div>
+          </article>
+
+          <article className="mission-data-card" aria-label="Maternity care access snapshot">
+            <p className="mission-data-eyebrow">Care Access Snapshot</p>
+            <h4 className="mission-data-title">
+              Over 35% of U.S. counties have no access to maternity care.
+            </h4>
+
+            <div className="mission-data-visual" role="img" aria-label="35 percent no access, 65 percent with access">
+              <div className="mission-data-donut-wrap">
+                <svg viewBox="0 0 42 42" className="mission-data-donut" aria-hidden="true">
+                  <circle className="mission-data-donut-base" cx="21" cy="21" r="15.9155" />
+                  <circle
+                    className="mission-data-donut-segment"
+                    cx="21"
+                    cy="21"
+                    r="15.9155"
+                    strokeDasharray="35 65"
+                  />
+                </svg>
+                <div className="mission-data-donut-label">
+                  <strong>35%</strong>
+                  <span>No access</span>
+                </div>
+              </div>
+              <div className="mission-data-compare">
+                <p className="mission-data-compare-title">Rural vs Urban Access (ScienceDirect)</p>
+                <div className="mission-data-bars" role="img" aria-label="Rural and urban maternity care access comparison">
+                  <div className="mission-data-region">
+                    <p className="mission-data-region-label">Rural counties</p>
+                    <div className="mission-data-bar-row">
+                      <span className="mission-data-bar-label">No access</span>
+                      <div className="mission-data-bar-track">
+                        <div className="mission-data-bar-fill mission-data-bar-fill-no-access" style={{ width: "55.8%" }} />
+                      </div>
+                      <span className="mission-data-bar-value">55.8%</span>
+                    </div>
+                    <div className="mission-data-bar-row">
+                      <span className="mission-data-bar-label">Full access</span>
+                      <div className="mission-data-bar-track">
+                        <div className="mission-data-bar-fill mission-data-bar-fill-full-access" style={{ width: "37.9%" }} />
+                      </div>
+                      <span className="mission-data-bar-value">37.9%</span>
+                    </div>
+                  </div>
+
+                  <div className="mission-data-region">
+                    <p className="mission-data-region-label">Urban counties</p>
+                    <div className="mission-data-bar-row">
+                      <span className="mission-data-bar-label">No access</span>
+                      <div className="mission-data-bar-track">
+                        <div className="mission-data-bar-fill mission-data-bar-fill-no-access" style={{ width: "22.9%" }} />
+                      </div>
+                      <span className="mission-data-bar-value">22.9%</span>
+                    </div>
+                    <div className="mission-data-bar-row">
+                      <span className="mission-data-bar-label">Full access</span>
+                      <div className="mission-data-bar-track">
+                        <div className="mission-data-bar-fill mission-data-bar-fill-full-access" style={{ width: "61.5%" }} />
+                      </div>
+                      <span className="mission-data-bar-value">61.5%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mission-data-legend">
+                <span className="mission-data-key mission-data-key-no-access" />
+                <span>No access</span>
+                <span className="mission-data-key mission-data-key-access" />
+                <span>Some access</span>
+              </div>
+            </div>
+
+            <p className="mission-data-impact">
+              This affects <strong>2.3 million</strong> reproductive-age women.
+            </p>
+            <p className="mission-data-source">(according to ScienceDirect)</p>
+          </article>
+
+          <article className="miscarriage-data-card" aria-label="U.S. miscarriage estimates by trimester">
+            <p className="miscarriage-data-eyebrow">Miscarriage Estimates</p>
+            <h4 className="miscarriage-data-title">Estimated annual U.S. miscarriages by trimester</h4>
+
+            <div className="miscarriage-charts">
+              <div className="miscarriage-chart">
+                <p className="miscarriage-chart-title">1st + 2nd trimester (n = 1,034,000)</p>
+                <svg viewBox="0 0 42 42" className="miscarriage-donut" aria-hidden="true">
+                  <circle className="miscarriage-donut-base" cx="21" cy="21" r="15.9155" />
+                  <circle
+                    className="miscarriage-donut-segment miscarriage-donut-segment-first"
+                    cx="21"
+                    cy="21"
+                    r="15.9155"
+                    strokeDasharray="87 13"
+                  />
+                  <circle
+                    className="miscarriage-donut-segment miscarriage-donut-segment-second"
+                    cx="21"
+                    cy="21"
+                    r="15.9155"
+                    strokeDasharray="13 87"
+                    strokeDashoffset="-87"
+                  />
+                </svg>
+                <p className="miscarriage-chart-note">1st trimester: 87.0% | 2nd trimester: 13.0%</p>
+              </div>
+
+              <div className="miscarriage-chart">
+                <p className="miscarriage-chart-title">1st trimester only (n = 900,000)</p>
+                <svg viewBox="0 0 42 42" className="miscarriage-donut" aria-hidden="true">
+                  <circle className="miscarriage-donut-base" cx="21" cy="21" r="15.9155" />
+                  <circle
+                    className="miscarriage-donut-segment miscarriage-donut-segment-first"
+                    cx="21"
+                    cy="21"
+                    r="15.9155"
+                    strokeDasharray="87 13"
+                  />
+                </svg>
+                <p className="miscarriage-chart-note">Share of annual 1st+2nd trimester miscarriages: 87.0%</p>
+              </div>
+            </div>
+
+            <div className="miscarriage-legend">
+              <span className="miscarriage-legend-key miscarriage-legend-key-first" />
+              <span>1st trimester</span>
+              <span className="miscarriage-legend-key miscarriage-legend-key-second" />
+              <span>2nd trimester / remaining share</span>
+            </div>
+
+            <p className="miscarriage-source">
+              Source: Nobles J, Hwang S, Bennett E, Jacques L. "Abortion Restrictions Threaten
+              Miscarriage Management in The United States." PMCID: PMC11596537, PMID: 39226500
+              (Health Aff).
+            </p>
           </article>
         </div>
       </section>

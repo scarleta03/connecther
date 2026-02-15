@@ -37,6 +37,7 @@ import {
   PiSmileyXEyes,
 } from "react-icons/pi";
 import { apiService } from "../../services/api.service";
+import { isServerTtsNotConfigured, speakWithBrowserTts } from "../../utils/ttsFallback";
 
 interface SymptomMoodItem {
   label: string;
@@ -256,11 +257,29 @@ export default function SymptomTracker() {
       };
       await audio.play();
     } catch (err) {
-      setIsSpeaking(false);
       const message =
         err instanceof Error && err.message
           ? err.message
           : "Audio unavailable right now.";
+
+      if (isServerTtsNotConfigured(message)) {
+        try {
+          await speakWithBrowserTts(audioSummaryText, audioLanguage);
+          setAudioError("Using browser voice because server text-to-speech is not configured.");
+          setIsSpeaking(false);
+          return;
+        } catch (fallbackError) {
+          const fallbackMessage =
+            fallbackError instanceof Error && fallbackError.message
+              ? fallbackError.message
+              : "Audio unavailable right now.";
+          setAudioError(fallbackMessage);
+          setIsSpeaking(false);
+          return;
+        }
+      }
+
+      setIsSpeaking(false);
       setAudioError(message);
     }
   };
