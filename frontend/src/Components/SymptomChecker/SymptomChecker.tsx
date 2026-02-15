@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { apiService } from "../../services/api.service";
-import type { CheckInResponse } from "../../types/api";
 
 interface SymptomMoodItem {
   label: string;
@@ -115,8 +113,6 @@ export default function SymptomTracker() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [energyLevel, setEnergyLevel] = useState<number>(3);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string>("");
 
   const toggleSymptom = (label: string) => {
     setSelectedSymptoms((prev) =>
@@ -138,36 +134,24 @@ export default function SymptomTracker() {
     );
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (selectedSymptoms.length === 0 && selectedMoods.length === 0) return;
 
-    setIsSubmitting(true);
-    setError("");
+    const userId = user?.email || "guest";
 
-    try {
-      const userId = user?.email || "guest";
-
-      const response = await apiService.submitCheckIn({
-        user_id: userId,
-        energy_level: energyLevel,
-        symptoms: selectedSymptoms.map(s => s.toLowerCase().replace(/\s+/g, '_')),
-        moods: selectedMoods.map(m => m.toLowerCase()),
-      });
-
-      // Navigate to recommendations page with the response data
-      navigate("/recommendations", {
-        state: {
-          recommendations: response.recommendations,
-          aiMessage: response.ai_message,
-          checkInId: response.check_in_id,
+    // Navigate to loading page with check-in data
+    sessionStorage.setItem("connecther-report-submitted", "true");
+    navigate("/loading", {
+      replace: true,
+      state: {
+        checkInData: {
+          user_id: userId,
+          energy_level: energyLevel,
+          symptoms: selectedSymptoms.map(s => s.toLowerCase().replace(/\s+/g, '_')),
+          moods: selectedMoods.map(m => m.toLowerCase()),
         }
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to submit check-in. Please try again.");
-      console.error("Check-in error:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
+      }
+    });
   };
 
   return (
@@ -463,45 +447,30 @@ export default function SymptomTracker() {
 
         {/* Submit */}
         <div style={{ textAlign: "center" }}>
-          {error && (
-            <div
-              style={{
-                marginBottom: "16px",
-                padding: "12px 20px",
-                borderRadius: "12px",
-                background: "#FFF0F0",
-                color: "#D4666B",
-                fontSize: "14px",
-                fontWeight: 500,
-              }}
-            >
-              {error}
-            </div>
-          )}
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting || (selectedSymptoms.length === 0 && selectedMoods.length === 0)}
+            disabled={selectedSymptoms.length === 0 && selectedMoods.length === 0}
             style={{
               padding: "16px 56px",
               borderRadius: "50px",
               border: "none",
               background:
-                isSubmitting || (selectedSymptoms.length === 0 && selectedMoods.length === 0)
+                selectedSymptoms.length === 0 && selectedMoods.length === 0
                   ? "#E0D6E0"
                   : "linear-gradient(135deg, #C8A2C8 0%, #D4A5C8 50%, #E8A5B8 100%)",
               color:
-                isSubmitting || (selectedSymptoms.length === 0 && selectedMoods.length === 0)
+                selectedSymptoms.length === 0 && selectedMoods.length === 0
                   ? "#B8A8B8"
                   : "white",
               fontSize: "17px",
               fontFamily: "'Poppins', sans-serif",
               fontWeight: 700,
               cursor:
-                isSubmitting || (selectedSymptoms.length === 0 && selectedMoods.length === 0)
+                selectedSymptoms.length === 0 && selectedMoods.length === 0
                   ? "not-allowed"
                   : "pointer",
               boxShadow:
-                isSubmitting || (selectedSymptoms.length === 0 && selectedMoods.length === 0)
+                selectedSymptoms.length === 0 && selectedMoods.length === 0
                   ? "none"
                   : "0 8px 28px rgba(200,162,200,0.4)",
               transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -522,7 +491,7 @@ export default function SymptomTracker() {
                   : "0 8px 28px rgba(200,162,200,0.4)";
             }}
           >
-            {isSubmitting ? "Finding Workouts..." : "Submit"}
+            Submit
           </button>
           {(selectedSymptoms.length > 0 || selectedMoods.length > 0) && (
             <p
